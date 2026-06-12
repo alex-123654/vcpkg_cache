@@ -1,0 +1,41 @@
+name: build-vcpkg-cache
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - vcpkg.json
+      - vcpkg-configuration.json
+      - .github/workflows/build-vcpkg.yml
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  build:
+    runs-on: windows-2022
+
+    env:
+      VCPKG_ROOT: C:\vcpkg
+      VCPKG_DEFAULT_TRIPLET: x64-windows
+      FEED_URL: https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json
+      VCPKG_BINARY_SOURCES: clear;nuget,https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json,readwrite
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Add GitHub Packages NuGet source
+        run: |
+          dotnet nuget add source "${env:FEED_URL}" `
+            --name "github" `
+            --username "${{ github.actor }}" `
+            --password "${{ secrets.GITHUB_TOKEN }}" `
+            --store-password-in-clear-text
+
+      - name: Install dependencies with vcpkg
+        run: |
+          & "${env:VCPKG_ROOT}\vcpkg.exe" install `
+            --triplet x64-windows `
+            --x-manifest-root="${{ github.workspace }}" `
+            --clean-buildtrees-after-build
