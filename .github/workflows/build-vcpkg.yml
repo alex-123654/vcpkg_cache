@@ -16,16 +16,28 @@ jobs:
   build:
     runs-on: windows-2022
 
+    strategy:
+      fail-fast: false
+      matrix:
+        triplet:
+          - x64-windows
+          - x64-windows-static
+
     env:
       VCPKG_ROOT: C:\vcpkg
-      VCPKG_DEFAULT_TRIPLET: x64-windows
       FEED_URL: https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json
       VCPKG_BINARY_SOURCES: clear;nuget,https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json,readwrite
 
     steps:
       - uses: actions/checkout@v4
 
+      - name: Check vcpkg
+        shell: pwsh
+        run: |
+          & "${env:VCPKG_ROOT}\vcpkg.exe" version
+
       - name: Add GitHub Packages NuGet source
+        shell: pwsh
         run: |
           dotnet nuget add source "${env:FEED_URL}" `
             --name "github" `
@@ -34,8 +46,9 @@ jobs:
             --store-password-in-clear-text
 
       - name: Install dependencies with vcpkg
+        shell: pwsh
         run: |
           & "${env:VCPKG_ROOT}\vcpkg.exe" install `
-            --triplet x64-windows `
+            --triplet "${{ matrix.triplet }}" `
             --x-manifest-root="${{ github.workspace }}" `
             --clean-buildtrees-after-build
