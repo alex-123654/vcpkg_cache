@@ -3,6 +3,8 @@ name: build-vcpkg-cache
 on:
   workflow_dispatch:
   push:
+    branches:
+      - main
     paths:
       - vcpkg.json
       - vcpkg-configuration.json
@@ -14,7 +16,7 @@ permissions:
 
 jobs:
   build:
-    runs-on: windows-2022
+    runs-on: windows-2025-vs2026
 
     strategy:
       fail-fast: false

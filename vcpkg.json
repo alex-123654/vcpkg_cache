@@ -1,5 +1,5 @@
 {
-  "name": "vcpkg-cache-demo",
+  "name": "vcpkg-cache",
   "version-string": "0.1.0",
   "dependencies": [
     "fmt"
